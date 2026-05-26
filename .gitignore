@@ -1,0 +1,50 @@
+# ========================
+# Dependencies
+# ========================
+node_modules/
+**/node_modules/
+
+# ========================
+# Build Output
+# ========================
+dist/
+build/
+**/dist/
+
+# ========================
+# Database (local only)
+# ========================
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+server/prisma/dev.db
+
+# ========================
+# Environment Variables (NEVER commit secrets!)
+# ========================
+.env
+.env.local
+.env.production
+.env.staging
+**/.env
+
+# ========================
+# Logs
+# ========================
+*.log
+npm-debug.log*
+logs/
+
+# ========================
+# OS & Editor Junk
+# ========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ========================
+# Prisma Generated Client (auto-generated on install)
+# ========================
+server/node_modules/.prisma/
