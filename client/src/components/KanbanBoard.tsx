@@ -569,7 +569,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId, onBack }) =
                     <div>
                       <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                         {m.user.name} 
-                        {m.role === 'PROJECT_ADMIN' && <Shield size={12} color="var(--accent-violet)" title="Board Admin" />}
+                        {m.role === 'PROJECT_ADMIN' && <span title="Board Admin"><Shield size={12} color="var(--accent-violet)" /></span>}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{m.user.email}</div>
                     </div>
