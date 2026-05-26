@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { signup, login, me } from './controllers/auth';
 import {
   createProject,
@@ -72,6 +73,18 @@ app.get('/api/tasks/:taskId/comments', authenticateJWT, getComments);
 
 // --- Dashboard & Analytics ---
 app.get('/api/dashboard/stats', authenticateJWT, getDashboardStats);
+
+// --- Serve Static Frontend in Production ---
+const clientBuildPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientBuildPath));
+
+// Fallback for Single Page Application (SPA) routing
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
 
 // --- Global Error Handler ---
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

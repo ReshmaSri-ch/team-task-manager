@@ -105,52 +105,33 @@ Open [http://localhost:3000](http://localhost:3000) to access the application!
 
 ## 🌐 Railway Live Deployment Guidelines (Mandatory)
 
-Deploying **Aether Task** on Railway takes minutes and switches the database automatically to a high-performance production **PostgreSQL** instance!
+Deploying **AetherTask** on Railway is incredibly simple! Since we have packaged the frontend and backend into a single unified service, you only need to deploy **one service** on Railway, and the database will automatically be provisioned using high-performance **PostgreSQL**.
 
-### Step 1: Initialize Git and Push to GitHub
-Run the following standard Git commands in your terminal to initialize and push the repository:
+### Step 1: Push the Code to GitHub
+Ensure you have committed and pushed all the latest code changes (including our automated build files) to your GitHub repository:
 ```bash
-git init
 git add .
-git commit -m "feat: initial commit of aether task"
-# Create a repository on GitHub, then link and push:
-git remote add origin <your-github-repo-url>
-git branch -M main
-git push -u origin main
+git commit -m "feat: configure unified monorepo build and start scripts for Railway"
+git push origin main
 ```
 
-### Step 2: Switch Database Engine to PostgreSQL in Production
-To support database persistence, Railway requires a durable SQL database. To switch Prisma ORM to use PostgreSQL on Railway:
-
-1. Open `server/prisma/schema.prisma`
-2. Change the `datasource db` block:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-3. Run locally or let Railway handle it automatically: `npx prisma generate`
-
-### Step 3: Spin Up PostgreSQL on Railway
+### Step 2: Spin Up PostgreSQL on Railway
 1. Log into your [Railway Console](https://railway.app/).
 2. Click **New Project** -> **Provision PostgreSQL**.
-3. Railway will immediately spin up an active database instance and generate a connection string in the environment variables under `DATABASE_URL`.
+3. Railway will immediately spin up an active database instance and create a `DATABASE_URL` environment variable.
 
-### Step 4: Deploy the Backend API Service
-1. Click **New** -> **GitHub Repo** -> select your uploaded repository.
-2. Select the `/server` folder or specify the **Root Directory** as `server` in the service settings.
-3. Add the following **Environment Variables** in the Railway service settings:
-   - `DATABASE_URL`: `${{ Postgres.DATABASE_URL }}` (Click "Reference Variable" -> select PostgreSQL `DATABASE_URL`)
-   - `JWT_SECRET`: `SelectAnySecureCustomStringToken`
-   - `PORT`: `5000`
-4. Railway will automatically deploy the Express server, execute `npm run build` and `npm start` (which triggers migrations via the `postinstall` script in `package.json` seamlessly!).
-5. Copy your live backend service URL (e.g. `https://aether-task-backend.up.railway.app`).
+### Step 3: Deploy the Unified Service
+1. Click **New** -> **GitHub Repo** -> select your `team-task-manager` repository.
+2. Do **NOT** specify a root directory (keep it as `/` root) so Railway runs the orchestrator in the project root.
+3. In the service settings, click on **Variables** -> **New Variable** and add:
+   - `DATABASE_URL`: `${{Postgres.DATABASE_URL}}` (Select reference to the PostgreSQL service variable)
+   - `JWT_SECRET`: `your_custom_secure_jwt_secret_string` (Any random string to sign auth tokens)
+4. Under **Settings** -> **Networking**, click **Generate Domain** to get your public live URL.
 
-### Step 5: Deploy the Frontend Client SPA
-1. Click **New** -> **GitHub Repo** -> select the same repository.
-2. In the service settings, specify the **Root Directory** as `client`.
-3. In `client/vite.config.ts`, you can update the proxy target to point to your live backend service URL, or simply set Vite to run builds. (Vite compiles down to pure static HTML/CSS/JS, which can be served by static hosts or via standard static servers).
-4. Add a domain in Railway under the Client Service. 
+### How it Works Under the Hood ⚙️
+1. **Root Orchestrator**: Railway reads our root `package.json` and runs `npm install`, which automatically installs dependencies for both `client` and `server`.
+2. **Build Phase**: It triggers the `build` scripts. This compiles Vite's frontend assets into static HTML/CSS/JS in `client/dist`, compiles TypeScript backend code into `server/dist`, and runs `server/scripts/prepare-db.js` which dynamically converts our Prisma schema to use PostgreSQL in production.
+3. **Start Phase**: On start, Railway runs `npm start` which triggers `prisma db push` to synchronize your database tables with PostgreSQL on Railway, and then runs the Express server on `$PORT`.
+4. **Unified Serving**: The Express server handles API requests under `/api/...` and serves all other requests statically using the compiled React files from `client/dist`.
 
-Your application is now fully live, persistent, and secure on Railway! 🎉
+Your full-stack application is now fully live, persistent, and secure on Railway! 🎉
